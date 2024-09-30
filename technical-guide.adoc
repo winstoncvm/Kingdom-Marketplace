@@ -71,6 +71,7 @@ function create_service_listing_cpt() {
     );
 }
 add_action( 'init', 'create_service_listing_cpt' );
+``` 
 
 === 2. Custom Fields for Service Listings
 
@@ -91,7 +92,7 @@ Field 6: Business Contact Information
 Type: Email / Phone
 Example of ACF field setup in PHP:
 
-
+```php
 if( function_exists('acf_add_local_field_group') ):
 
 acf_add_local_field_group(array(
@@ -152,6 +153,7 @@ acf_add_local_field_group(array(
 ));
 
 endif;
+```
 === 3. Escrow System and Token Exchange
 
 You’ll need an escrow system to ensure the Kingdom Coins are held until both parties confirm that the service has been completed.
@@ -167,8 +169,7 @@ tokens_held: Number of tokens in escrow
 status: Status of the transaction (Pending, Completed, Disputed)
 SQL Example:
 
-sql
-Copy code
+```sql
 CREATE TABLE wp_escrow (
     escrow_id INT(11) NOT NULL AUTO_INCREMENT,
     service_listing_id INT(11) NOT NULL,
@@ -176,6 +177,8 @@ CREATE TABLE wp_escrow (
     status VARCHAR(20) DEFAULT 'Pending',
     PRIMARY KEY (escrow_id)
 );
+```
+
 Transaction Workflow:
 
 When a business purchases a service, the tokens are held in the escrow table.
@@ -198,7 +201,7 @@ Business Website
 Contact Information
 Example of a custom form handler:
 
-
+```php
 function handle_business_submission() {
     if (isset($_POST['submit_business'])) {
         $business_name = sanitize_text_field($_POST['business_name']);
@@ -222,6 +225,8 @@ function handle_business_submission() {
 }
 add_action('admin_post_nopriv_submit_business', 'handle_business_submission');
 add_action('admin_post_submit_business', 'handle_business_submission');
+
+```
 == Implementation
 
 Week 1:
