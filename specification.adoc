@@ -1,4 +1,4 @@
-= SPEC-1: Kingdom Marketplace Barter Platform
+= SPEC-1: Kingdom Marketplace Service Barter Platform
 :sectnums:
 :toc:
 
