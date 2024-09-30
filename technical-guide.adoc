@@ -71,3 +71,191 @@ function create_service_listing_cpt() {
     );
 }
 add_action( 'init', 'create_service_listing_cpt' );
+
+=== 2. Custom Fields for Service Listings
+
+You’ll need to add custom fields to capture service details for each business. Use a plugin like ACF (Advanced Custom Fields) or manually create these fields using WordPress's meta box functions.
+
+Field Group: Service Details
+Field 1: Service Name
+Type: Text
+Field 2: Service Description
+Type: Text Area
+Field 3: Token Price (Kingdom Coin)
+Type: Number
+Field 4: Service Category
+Type: Dropdown (e.g., Graphic Design, Financial Services, etc.)
+Field 5: Business Website
+Type: URL
+Field 6: Business Contact Information
+Type: Email / Phone
+Example of ACF field setup in PHP:
+
+
+if( function_exists('acf_add_local_field_group') ):
+
+acf_add_local_field_group(array(
+    'key' => 'group_service_listing',
+    'title' => 'Service Details',
+    'fields' => array(
+        array(
+            'key' => 'field_service_name',
+            'label' => 'Service Name',
+            'name' => 'service_name',
+            'type' => 'text',
+        ),
+        array(
+            'key' => 'field_service_description',
+            'label' => 'Service Description',
+            'name' => 'service_description',
+            'type' => 'textarea',
+        ),
+        array(
+            'key' => 'field_token_price',
+            'label' => 'Token Price (Kingdom Coin)',
+            'name' => 'token_price',
+            'type' => 'number',
+        ),
+        array(
+            'key' => 'field_service_category',
+            'label' => 'Service Category',
+            'name' => 'service_category',
+            'type' => 'select',
+            'choices' => array(
+                'graphic_design' => 'Graphic Design',
+                'financial_services' => 'Financial Services',
+                // Add more categories as needed
+            ),
+        ),
+        array(
+            'key' => 'field_business_website',
+            'label' => 'Business Website',
+            'name' => 'business_website',
+            'type' => 'url',
+        ),
+        array(
+            'key' => 'field_contact_information',
+            'label' => 'Contact Information',
+            'name' => 'contact_information',
+            'type' => 'text',
+        ),
+    ),
+    'location' => array(
+        array(
+            array(
+                'param' => 'post_type',
+                'operator' => '==',
+                'value' => 'service_listing',
+            ),
+        ),
+    ),
+));
+
+endif;
+=== 3. Escrow System and Token Exchange
+
+You’ll need an escrow system to ensure the Kingdom Coins are held until both parties confirm that the service has been completed.
+
+Steps to Implement:
+
+Escrow Table in the database:
+Create a custom table to track the tokens held in escrow for each transaction.
+Fields:
+escrow_id: Unique ID
+service_listing_id: Associated service listing
+tokens_held: Number of tokens in escrow
+status: Status of the transaction (Pending, Completed, Disputed)
+SQL Example:
+
+sql
+Copy code
+CREATE TABLE wp_escrow (
+    escrow_id INT(11) NOT NULL AUTO_INCREMENT,
+    service_listing_id INT(11) NOT NULL,
+    tokens_held DECIMAL(10, 2) NOT NULL,
+    status VARCHAR(20) DEFAULT 'Pending',
+    PRIMARY KEY (escrow_id)
+);
+Transaction Workflow:
+
+When a business purchases a service, the tokens are held in the escrow table.
+Upon service completion, the seller confirms delivery, and the tokens are released.
+If there is a dispute, an admin can resolve the issue and either return the tokens to the buyer or release them to the seller.
+Escrow Logic in PHP:
+
+Create functions for adding to escrow, releasing tokens, and handling disputes.
+=== 4. Business Submission Form
+
+You can create a business submission form using Contact Form 7, WPForms, or custom code.
+
+Form Fields:
+
+Business Name
+Business Description
+Service(s) Offered
+Token Price per Service
+Business Website
+Contact Information
+Example of a custom form handler:
+
+
+function handle_business_submission() {
+    if (isset($_POST['submit_business'])) {
+        $business_name = sanitize_text_field($_POST['business_name']);
+        $business_description = sanitize_textarea_field($_POST['business_description']);
+        // Add other fields similarly
+
+        // Insert as a new 'service_listing' post
+        $post_id = wp_insert_post(array(
+            'post_title' => $business_name,
+            'post_content' => $business_description,
+            'post_type' => 'service_listing',
+            'post_status' => 'pending', // Submit for admin approval
+        ));
+
+        // Handle custom fields using update_post_meta()
+        update_post_meta($post_id, 'token_price', sanitize_text_field($_POST['token_price']));
+        // Add other custom fields as needed
+
+        // Redirect or display success message
+    }
+}
+add_action('admin_post_nopriv_submit_business', 'handle_business_submission');
+add_action('admin_post_submit_business', 'handle_business_submission');
+== Implementation
+
+Week 1:
+
+Set up the WordPress environment with the Numismatico theme.
+Develop the Kingdom Coin token system for basic exchanges.
+Build the registration and profile system for businesses to list services.
+Adapt ICO listing pages into business service pages, using Kingdom Coin pricing.
+Week 2:
+
+Develop the escrow system to hold Kingdom Coins during transactions and release them upon service completion.
+Create a simple form submission flow for businesses to submit their information to be listed on the platform.
+Week 3:
+
+Customize business profile pages to include detailed service listings.
+Implement transaction tracking for users (e.g., tokens earned, tokens spent).
+Week 4:
+
+Test user registration, service listing, and token exchange features.
+Finalize and refine the escrow system.
+Conduct user testing with initial businesses to ensure ease of use and correct functionality.
+Prepare the platform for launch on October 14th.
+== Milestones
+
+Week 1: Finalize core MVP functionality: User registration, token system, service listing page customization.
+Week 2: Complete the token management, escrow system, and form submission for business sign-up.
+Week 3: Finalize business profile customization, transaction tracking, and escrow features.
+Week 4: Conduct user testing, fix bugs, and prepare for launch.
+== Gathering Results
+
+Post-launch, evaluate the platform’s performance based on:
+
+The number of businesses registered and their service listings.
+Successful service transactions completed using Kingdom Coin.
+User feedback on the ease of service exchange, registration process, and escrow management.
+Assess the potential for integrating dynamic token valuation and performance-based rewards in future iterations.
+
