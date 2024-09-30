@@ -43,11 +43,11 @@ The Kingdom marketplace is designed to allow businesses in the Kingdom of God to
 
 == Detailed Technical Plan
 
-This section breaks down the specific **technical fields, field groups, actions**, and **WordPress development concepts** you’ll need to implement the Kingdom Marketplace.
+This section breaks down the specific **technical fields, field groups, actions**, and **WordPress development concepts** needed to implement the Kingdom Marketplace.
 
 === 1. **Custom Post Types for Service Listings**
 
-WordPress will need a **custom post type** for businesses to create service listings. This custom post type will be based on the ICO pages in your Numismatico theme but modified to represent **service listings**.
+WordPress will need a **custom post type** for businesses to create service listings. This custom post type will be based on the ICO pages in Numismatico theme but modified to represent **service listings**.
 
 - **Post Type Name**: `service_listing`
 - **Label**: `Service Listings`
@@ -75,7 +75,7 @@ add_action( 'init', 'create_service_listing_cpt' );
 
 === 2. Custom Fields for Service Listings
 
-You’ll need to add custom fields to capture service details for each business. Use a plugin like ACF (Advanced Custom Fields) or manually create these fields using WordPress's meta box functions.
+Custom fields to capture service details for each business. 
 
 Field Group: Service Details
 Field 1: Service Name
@@ -90,7 +90,8 @@ Field 5: Business Website
 Type: URL
 Field 6: Business Contact Information
 Type: Email / Phone
-Example of ACF field setup in PHP:
+
+ACF field setup:
 
 ```php
 if( function_exists('acf_add_local_field_group') ):
@@ -154,79 +155,174 @@ acf_add_local_field_group(array(
 
 endif;
 ```
-=== 3. Escrow System and Token Exchange
 
-You’ll need an escrow system to ensure the Kingdom Coins are held until both parties confirm that the service has been completed.
 
-Steps to Implement:
+== Post Types and Fields
 
-Escrow Table in the database:
-Create a custom table to track the tokens held in escrow for each transaction.
-Fields:
-escrow_id: Unique ID
-service_listing_id: Associated service listing
-tokens_held: Number of tokens in escrow
-status: Status of the transaction (Pending, Completed, Disputed)
-SQL Example:
+=== 1. Company Post Type
+*Title*: Name of the Company  
+*Content*: Company Description
 
-```sql
-CREATE TABLE wp_escrow (
-    escrow_id INT(11) NOT NULL AUTO_INCREMENT,
-    service_listing_id INT(11) NOT NULL,
-    tokens_held DECIMAL(10, 2) NOT NULL,
-    status VARCHAR(20) DEFAULT 'Pending',
-    PRIMARY KEY (escrow_id)
-);
-```
+*Fields*:
+- Company Logo (Image)
+- Company Website (URL)
+- Industry (Select or Text)
+- Location (Text or Google Maps)
+- Established Date (Date)
+- Number of Employees (Number)
+- Company Rating (Calculated based on reviews, projects completed, etc.)
+- Total Projects Posted (Calculated)
+- Total Projects Completed (Calculated)
+- Total Team Members (Calculated)
+- Company Wallet Balance (Calculated)
+- ICO Token Allocation (Number)
+- Social Media Links (Repeater: Platform, URL)
+- Contact Email (Email)
+- Phone Number (Text)
+- Verification Status (Boolean: Verified/Not Verified)
 
-Transaction Workflow:
+*Relationships*:
+- Team Members (One-to-Many: Company → Team Member)
+- Services (One-to-Many: Company → Service)
+- Projects (One-to-Many: Company → Project)
+- Reviews (One-to-Many: Company → Review)
 
-When a business purchases a service, the tokens are held in the escrow table.
-Upon service completion, the seller confirms delivery, and the tokens are released.
-If there is a dispute, an admin can resolve the issue and either return the tokens to the buyer or release them to the seller.
-Escrow Logic in PHP:
+=== 2. Freelancer Post Type
+*Title*: Freelancer Name  
+*Content*: Freelancer Bio
 
-Create functions for adding to escrow, releasing tokens, and handling disputes.
-=== 4. Business Submission Form
+*Fields*:
+- Profile Picture (Image)
+- Skills (Repeater: Skill Name, Proficiency Level)
+- Location (Text or Google Maps)
+- Hourly Rate (Number)
+- Years of Experience (Number)
+- Freelancer Rating (Calculated from reviews, projects completed, etc.)
+- Total Projects Completed (Calculated)
+- Wallet Balance (Calculated)
+- ICO Token Allocation (Number)
+- Portfolio (Repeater: Project Title, Description, URL/Image)
+- Availability Status (Boolean: Available/Not Available)
+- Social Media Links (Repeater: Platform, URL)
+- Contact Email (Email)
+- Phone Number (Text)
+- Verification Status (Boolean: Verified/Not Verified)
 
-You can create a business submission form using Contact Form 7, WPForms, or custom code.
+*Relationships*:
+- Services (One-to-Many: Freelancer → Service)
+- Projects (Many-to-Many: Freelancer ↔ Project)
+- Reviews (One-to-Many: Freelancer → Review)
 
-Form Fields:
+=== 3. Service Post Type
+*Title*: Service Title  
+*Content*: Service Description
 
-Business Name
-Business Description
-Service(s) Offered
-Token Price per Service
-Business Website
-Contact Information
-Example of a custom form handler:
+*Fields*:
+- Service Category (Taxonomy or Select)
+- Service Tags (Taxonomy or Select)
+- Pricing Model (Select: Fixed Price, Hourly, Per Unit)
+- Price (Number)
+- Service Delivery Time (Number, Select: Days, Weeks, Months)
+- Service Extras (Repeater: Extra Title, Description, Price)
+- Total Orders Completed (Calculated)
+- Average Rating (Calculated from Reviews)
+- Service Image/Gallery (Image or Gallery)
+- FAQ (Repeater: Question, Answer)
+- Service Status (Select: Active, Inactive)
 
-```php
-function handle_business_submission() {
-    if (isset($_POST['submit_business'])) {
-        $business_name = sanitize_text_field($_POST['business_name']);
-        $business_description = sanitize_textarea_field($_POST['business_description']);
-        // Add other fields similarly
+*Relationships*:
+- Freelancer or Company (Many-to-One: Service → Freelancer/Company)
+- Projects (One-to-Many: Service → Project)
+- Reviews (One-to-Many: Service → Review)
 
-        // Insert as a new 'service_listing' post
-        $post_id = wp_insert_post(array(
-            'post_title' => $business_name,
-            'post_content' => $business_description,
-            'post_type' => 'service_listing',
-            'post_status' => 'pending', // Submit for admin approval
-        ));
+=== 4. Project Post Type
+*Title*: Project Title  
+*Content*: Project Description
 
-        // Handle custom fields using update_post_meta()
-        update_post_meta($post_id, 'token_price', sanitize_text_field($_POST['token_price']));
-        // Add other custom fields as needed
+*Fields*:
+- Project Start Date (Date)
+- Project End Date (Date)
+- Project Budget (Number)
+- Project Status (Select: Open, In Progress, Completed, Cancelled)
+- Client Satisfaction Score (Number, Calculated from Reviews)
+- Freelancer Performance Score (Number, Calculated from Reviews)
+- Total Amount Paid (Calculated)
+- Milestones (Repeater: Milestone Title, Description, Due Date, Status)
+- Project Files (File Upload)
+- Project Communication (Text or Linked to Communication System)
+- Project Escrow (Boolean: Active/Released)
 
-        // Redirect or display success message
-    }
-}
-add_action('admin_post_nopriv_submit_business', 'handle_business_submission');
-add_action('admin_post_submit_business', 'handle_business_submission');
+*Relationships*:
+- Company (Many-to-One: Project → Company)
+- Freelancer(s) (Many-to-Many: Project ↔ Freelancer)
+- Service (Many-to-One: Project → Service)
+- Transactions (One-to-Many: Project → Transaction)
+- Reviews (One-to-One: Project → Review)
 
-```
+=== 5. Review Post Type
+*Title*: Review Title (Auto-generated or Hidden)  
+*Content*: Review Description
+
+*Fields*:
+- Rating (Number: 1-5 Stars)
+- Review Type (Select: Freelancer Review, Company Review, Service Review)
+- Review Date (Date)
+- Reviewer’s Name (Auto-populated)
+- Reviewer’s Role (Select: Client, Freelancer, Company)
+- Pros (Repeater: Pro)
+- Cons (Repeater: Con)
+- Overall Satisfaction (Number)
+- Project Reference (Link to Project)
+
+*Relationships*:
+- Company or Freelancer or Service (One-to-One: Review → Company/Freelancer/Service)
+- Project (One-to-One: Review → Project)
+
+=== 6. Transaction Post Type
+*Title*: Transaction ID (Auto-generated, Hidden)  
+*Content*: Transaction Details
+
+*Fields*:
+- Transaction Date (Date)
+- Amount (Number)
+- Transaction Type (Select: Payment, Escrow, Reward, Penalty)
+- Sender (Link to Freelancer/Company)
+- Receiver (Link to Freelancer/Company)
+- Transaction Status (Select: Pending, Completed, Failed)
+- Related Project (Link to Project)
+
+*Relationships*:
+- Freelancer or Company (Many-to-One: Transaction → Freelancer/Company)
+- Project (Many-to-One: Transaction → Project)
+
+=== 7. Team Member Post Type
+*Title*: Team Member Name  
+*Content*: Team Member Bio
+
+*Fields*:
+- Profile Picture (Image)
+- Role in Company (Text)
+- Contact Email (Email)
+- Phone Number (Text)
+- Skills (Repeater: Skill Name, Proficiency Level)
+- Years of Experience (Number)
+- Team Member Status (Select: Active, Inactive)
+
+*Relationships*:
+- Company (Many-to-One: Team Member → Company)
+- Projects (Many-to-Many: Team Member ↔ Project)
+
+== Relationships Summary
+- *Company ↔ Team Member*: One-to-Many (A company has many team members)
+- *Company ↔ Service*: One-to-Many (A company offers many services)
+- *Company ↔ Project*: One-to-Many (A company posts many projects)
+- *Freelancer ↔ Service*: One-to-Many (A freelancer offers many services)
+- *Freelancer ↔ Project*: Many-to-Many (A freelancer can work on many projects and a project can have multiple freelancers)
+- *Project ↔ Review*: One-to-One (Each project has one review)
+- *Service ↔ Project*: One-to-Many (A service can be associated with multiple projects)
+- *Service ↔ Review*: One-to-Many (A service can have multiple reviews)
+- *Transaction ↔ Project*: Many-to-One (Multiple transactions can be associated with a single project)
+
 == Implementation
 
 Week 1:
