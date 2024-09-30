@@ -1,0 +1,73 @@
+= SPEC-1: Kingdom Marketplace Barter Platform
+:sectnums:
+:toc:
+
+== Background
+
+The Kingdom marketplace is designed to allow businesses in the Kingdom of God to exchange services without the need for traditional financial resources. By introducing a platform-specific currency (Kingdom Coin), businesses can barter services, contributing to a faith-driven kingdom economy. This platform aims to foster collaboration, where each business fulfills another’s needs using tokens instead of cash.
+
+== Requirements
+
+*Must Have*:
+- A token-based bartering system (Kingdom Coin) where businesses exchange services for tokens.
+- User registration and business profiles where businesses can list services and offer tokens for service exchange.
+- An easy-to-use form submission for businesses to join the marketplace and list their services.
+- Customizable ICO pages that serve as business service listings.
+- Escrow and transaction management to ensure fairness in token exchanges.
+- MVP launch by October 14th for businesses to sign up and submit services.
+
+*Should Have*:
+- Dynamic token valuation based on performance metrics such as project completion rates (to be added after MVP launch).
+- A performance tracking system with token-based rewards and penalties (post-launch).
+
+== Method
+
+1. **Token Creation and Management**:
+    - Develop a unified cryptocurrency called **Kingdom Coin** as the platform’s primary medium of exchange.
+    - Ensure each business transaction is conducted using Kingdom Coin.
+
+2. **Service Listing**:
+    - Adapt the ICO listing page template to allow businesses to list their services, set prices in Kingdom Coins, and describe the services they offer.
+    - Include sections for business descriptions, token values per service, and links to their websites or promotional content.
+
+3. **Form Submission**:
+    - Create a form where businesses can submit details to be approved for listing. Capture necessary fields such as business name, description, services offered, and token price for each service.
+
+4. **Escrow and Transaction Management**:
+    - Implement a basic escrow system where tokens for a service are held securely until the service is completed. This ensures both parties in the transaction are protected.
+    - Enable users to view their transaction history, including services offered and tokens earned or spent.
+
+5. **Customization of ICO Pages**:
+    - Modify the theme’s ICO pages to reflect the service marketplace structure, where each listing represents a business offering services for tokens rather than cryptocurrency ICOs.
+    - Ensure each business has a detailed profile that showcases their services and the exchange rates in Kingdom Coin.
+
+== Detailed Technical Plan
+
+This section breaks down the specific **technical fields, field groups, actions**, and **WordPress development concepts** you’ll need to implement the Kingdom Marketplace.
+
+=== 1. **Custom Post Types for Service Listings**
+
+WordPress will need a **custom post type** for businesses to create service listings. This custom post type will be based on the ICO pages in your Numismatico theme but modified to represent **service listings**.
+
+- **Post Type Name**: `service_listing`
+- **Label**: `Service Listings`
+- **Capabilities**: Add/edit/view listings for businesses.
+
+*Example Code to Create the Post Type*:
+```php
+function create_service_listing_cpt() {
+    register_post_type( 'service_listing',
+        array(
+            'labels' => array(
+                'name' => __( 'Service Listings' ),
+                'singular_name' => __( 'Service Listing' )
+            ),
+            'public' => true,
+            'has_archive' => true,
+            'rewrite' => array('slug' => 'services'),
+            'supports' => array('title', 'editor', 'thumbnail'),
+            'show_in_rest' => true,
+        )
+    );
+}
+add_action( 'init', 'create_service_listing_cpt' );
